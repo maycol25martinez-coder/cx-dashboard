@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CX Analytics Dashboard - Especialista Soluciones</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js Local (Permite ejecucion sin conexion a internet) -->
+    <script src="chart.js"></script>
+    <style>
+        :root {
+            --bg-gradient-start: #0f172a;
+            --bg-gradient-end: #1e1b4b;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --panel-shadow: rgba(0, 0, 0, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --color-promoter: #10b981;
+            --color-passive: #f59e0b;
+            --color-detractor: #f43f5e;
+            --color-primary: #8b5cf6;
+            --color-primary-hover: #a78bfa;
+            --color-primary-light: rgba(139, 92, 246, 0.15);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            padding-bottom: 2rem;
+        }
+
+        /* Container & Layout */
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        /* Sidebar for Filters */
+        .sidebar {
+            width: 300px;
+            flex-shrink: 0;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            box-shadow: 0 10px 30px var(--panel-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 1.5rem;
+        }
+
+        .logo-section {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1.25rem;
+        }
+
+        .logo-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #a78bfa, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .filter-section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+        }
+
+        .clear-filters-btn {
+            background: var(--color-primary-light);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            padding: 0.75rem;
+            color: var(--color-primary-hover);
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            margin-top: 1rem;
+        }
+
+        .clear-filters-btn:hover {
+            background: var(--color-primary);
+            color: var(--text-primary);
+            border-color: var(--color-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Header block */
+        .header-block {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 10px 30px var(--panel-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-info p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .kpi-summary-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .kpi-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.25rem;
+            box-shadow: 0 10px 30px var(--panel-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: transparent;
+        }
+
+        .kpi-card.nps::before { background: var(--color-primary); }
+        .kpi-card.csat::before { background: var(--color-promoter); }
+        .kpi-card.ces::before { background: var(--color-passive); }
+        .kpi-card.contrib::before { background: #3b82f6; }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-icon {
+            font-size: 1.25rem;
+            opacity: 0.7;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin: 0.25rem 0;
+        }
+
+        .kpi-subtext {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .kpi-bar-container {
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .kpi-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
+        .kpi-nps-bar { display: flex; height: 6px; border-radius: 10px; overflow: hidden; margin-top: 0.5rem; }
+        .nps-segment { height: 100%; }
+        .nps-segment.prom { background: var(--color-promoter); }
+        .nps-segment.pas { background: var(--color-passive); }
+        .nps-segment.det { background: var(--color-detractor); }
+
+        /* Charts Section Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px var(--panel-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 380px;
+        }
+
+        .chart-card.wide {
+            grid-column: span 2;
+        }
+
+        .chart-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .chart-card-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .chart-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Comments Table Card */
+        .comments-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px var(--panel-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comments-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .search-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        .comment-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .comment-tab {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }
+
+        .comment-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .comment-tab.active {
+            background: var(--color-primary);
+            color: var(--text-primary);
+            border-color: var(--color-primary);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 400px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.85rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-promoter { background: rgba(16, 185, 129, 0.15); color: var(--color-promoter); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-passive { background: rgba(245, 158, 11, 0.15); color: var(--color-passive); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-detractor { background: rgba(244, 63, 94, 0.15); color: var(--color-detractor); border: 1px solid rgba(244, 63, 94, 0.3); }
+
+        .client-id { font-weight: 600; color: #a78bfa; }
+        .contrib-val { font-weight: 600; font-family: monospace; font-size: 0.85rem; }
+
+        .score-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .score-indicator.ces { background: rgba(245, 158, 11, 0.15); color: var(--color-passive); }
+        .score-indicator.csat { background: rgba(16, 185, 129, 0.15); color: var(--color-promoter); }
+
+        .comment-text {
+            color: var(--text-primary);
+            max-width: 450px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            line-height: 1.4;
+        }
+
+        .no-data-msg {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 3rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .dashboard-container { flex-direction: column; }
+            .sidebar { width: 100%; position: static; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-card.wide { grid-column: span 1; }
+        }
+
+        @media (max-width: 600px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar filters -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-title">CX SOLUTION ANALYTICS</div>
+                <div class="logo-subtitle">Monitoreo de Experiencia</div>
+            </div>
+
+            <div class="filter-section-title">Filtros de Datos</div>
+
+            <div class="filter-group">
+                <label for="canal-filter">Canal de Atención</label>
+                <select id="canal-filter">
+                    <option value="All">Todos los canales</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Call Center">Call Center</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="mes-filter">Mes</label>
+                <select id="mes-filter">
+                    <option value="All">Todos los meses</option>
+                    <option value="Marzo">Marzo</option>
+                    <option value="Abril">Abril</option>
+                    <option value="Mayo">Mayo</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="estrat-filter">Segmento Estratégico</label>
+                <select id="estrat-filter">
+                    <option value="All">Todos los segmentos</option>
+                    <option value="Preferencial">Preferencial</option>
+                    <option value="Premium">Premium</option>
+                    <option value="Masivo">Masivo</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="oper-filter">Segmento Operativo</label>
+                <select id="oper-filter">
+                    <option value="All">Todos los segmentos operativos</option>
+                    <option value="Persona Física">Persona Física</option>
+                    <option value="Corporativo">Corporativo</option>
+                    <option value="PYME">PYME</option>
+                </select>
+            </div>
+
+            <button class="clear-filters-btn" id="clear-filters">Restablecer Filtros</button>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Header Block -->
+            <header class="header-block">
+                <div class="header-info">
+                    <h1 id="dynamic-title">Dashboard General de CX</h1>
+                    <p>Resultados consolidando encuestas post-atención (Marzo - Mayo 2026)</p>
+                </div>
+                <div class="kpi-summary-badge" id="survey-count-badge">
+                    Encuestas analizadas: 150
+                </div>
+            </header>
+
+            <!-- KPIs Grid -->
+            <section class="kpi-grid">
+                <!-- NPS Card -->
+                <div class="kpi-card nps">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Net Promoter Score</span>
+                        <span class="kpi-icon">🎯</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-nps-val">8.00%</div>
+                    <div class="kpi-subtext" id="kpi-nps-sub">Promotores vs Detractores</div>
+                    <div class="kpi-nps-bar">
+                        <div class="nps-segment prom" id="nps-bar-prom" title="Promotores"></div>
+                        <div class="nps-segment pas" id="nps-bar-pas" title="Pasivos"></div>
+                        <div class="nps-segment det" id="nps-bar-det" title="Detractores"></div>
+                    </div>
+                </div>
+
+                <!-- CSAT Card -->
+                <div class="kpi-card csat">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Satisfacción (CSAT)</span>
+                        <span class="kpi-icon">⭐</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-csat-val">3.38 <span style="font-size:1rem; color:var(--text-secondary);">/ 5</span></div>
+                    <div class="kpi-subtext" id="kpi-csat-sub">Promedio de satisfacción general</div>
+                    <div class="kpi-bar-container">
+                        <div class="kpi-bar-fill" id="csat-bar" style="background: var(--color-promoter);"></div>
+                    </div>
+                </div>
+
+                <!-- CES Card -->
+                <div class="kpi-card ces">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Esfuerzo Cliente (CES)</span>
+                        <span class="kpi-icon">⚡</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-ces-val">3.29 <span style="font-size:1rem; color:var(--text-secondary);">/ 7</span></div>
+                    <div class="kpi-subtext" id="kpi-ces-sub">Facilidad de resolución (Alto = Fácil)</div>
+                    <div class="kpi-bar-container">
+                        <div class="kpi-bar-fill" id="ces-bar" style="background: var(--color-passive);"></div>
+                    </div>
+                </div>
+
+                <!-- Contribution Card -->
+                <div class="kpi-card contrib">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Contribución Financiera</span>
+                        <span class="kpi-icon">💰</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-contrib-val">$20.92M</div>
+                    <div class="kpi-subtext" id="kpi-contrib-sub">Promedio por cliente: $139.4k</div>
+                    <div class="kpi-bar-container">
+                        <div class="kpi-bar-fill" id="contrib-bar" style="background: #3b82f6; width: 100%;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-grid">
+                <!-- Trend line chart -->
+                <div class="chart-card wide">
+                    <div class="chart-card-title">
+                        <div>
+                            Evolución Mensual del NPS por Canal
+                            <div class="chart-card-subtitle">Tendencia de promotores vs detractores por mes</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- NPS Doughnut -->
+                <div class="chart-card">
+                    <div class="chart-card-title">
+                        <div>
+                            Composición de Grupos NPS
+                            <div class="chart-card-subtitle">Detractores (0-6), Pasivos (7-8), Promotores (9-10)</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="npsDoughnutChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Net Contribution by NPS Group -->
+                <div class="chart-card">
+                    <div class="chart-card-title">
+                        <div>
+                            Contribución Financiera por Nivel de Satisfacción
+                            <div class="chart-card-subtitle">Contribución neta promedio según grupo de NPS</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="contribChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Causes of dissatisfaction bar chart -->
+                <div class="chart-card wide">
+                    <div class="chart-card-title">
+                        <div>
+                            Principales Causas de Insatisfacción (Detractores)
+                            <div class="chart-card-subtitle">Clasificación cuantitativa del feedback de detractores (NPS &le; 6)</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="dissatisfactionChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Comments section -->
+            <section class="comments-card">
+                <div class="chart-card-title" style="border:none; padding:0;">
+                    <div>
+                        Comentarios Reales de los Clientes
+                        <div class="chart-card-subtitle">Bandeja de comentarios del segmento seleccionado</div>
+                    </div>
+                </div>
+
+                <div class="comments-controls">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="comments-search" class="search-input" placeholder="Buscar palabras clave en comentarios...">
+                    </div>
+                    <div class="comment-tabs">
+                        <div class="comment-tab active" data-group="All">Todos (150)</div>
+                        <div class="comment-tab" data-group="Promotor" style="color: var(--color-promoter);">Promotores</div>
+                        <div class="comment-tab" data-group="Pasivo" style="color: var(--color-passive);">Pasivos</div>
+                        <div class="comment-tab" data-group="Detractor" style="color: var(--color-detractor);">Detractores</div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="comments-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Canal</th>
+                                <th>Grupo NPS</th>
+                                <th>CES</th>
+                                <th>CSAT</th>
+                                <th>Contribución</th>
+                                <th>Comentario</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comments-tbody">
+                            <!-- Rows will be injected here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Inject data.js dynamically -->
+    <script src="data.js"></script>
+    <script>
+        // Global variables for Chart instances
+        let trendChartObj = null;
+        let npsDoughnutChartObj = null;
+        let contribChartObj = null;
+        let dissatisfactionChartObj = null;
+
+        // Current active comments tab group
+        let activeCommentsTab = 'All';
+
+        // DOM elements
+        const canalFilter = document.getElementById('canal-filter');
+        const mesFilter = document.getElementById('mes-filter');
+        const estratFilter = document.getElementById('estrat-filter');
+        const operFilter = document.getElementById('oper-filter');
+        const clearFiltersBtn = document.getElementById('clear-filters');
+        
+        const dynamicTitle = document.getElementById('dynamic-title');
+        const surveyCountBadge = document.getElementById('survey-count-badge');
+        
+        const kpiNpsVal = document.getElementById('kpi-nps-val');
+        const kpiNpsSub = document.getElementById('kpi-nps-sub');
+        const npsBarProm = document.getElementById('nps-bar-prom');
+        const npsBarPas = document.getElementById('nps-bar-pas');
+        const npsBarDet = document.getElementById('nps-bar-det');
+        
+        const kpiCsatVal = document.getElementById('kpi-csat-val');
+        const csatBar = document.getElementById('csat-bar');
+        
+        const kpiCesVal = document.getElementById('kpi-ces-val');
+        const cesBar = document.getElementById('ces-bar');
+        
+        const kpiContribVal = document.getElementById('kpi-contrib-val');
+        const kpiContribSub = document.getElementById('kpi-contrib-sub');
+        const searchInput = document.getElementById('comments-search');
+        const commentTabs = document.querySelectorAll('.comment-tab');
+        const commentsTbody = document.getElementById('comments-tbody');
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if dataset exists
+            if (typeof dataset === 'undefined' || !dataset) {
+                console.error("Dataset not loaded!");
+                commentsTbody.innerHTML = '<tr><td colspan="7" class="no-data-msg">Error: Base de datos no encontrada.</td></tr>';
+                return;
+            }
+
+            // Set up event listeners for filters
+            [canalFilter, mesFilter, estratFilter, operFilter].forEach(el => {
+                el.addEventListener('change', updateDashboard);
+            });
+
+            clearFiltersBtn.addEventListener('click', () => {
+                canalFilter.value = 'All';
+                mesFilter.value = 'All';
+                estratFilter.value = 'All';
+                operFilter.value = 'All';
+                searchInput.value = '';
+                updateDashboard();
+            });
+
+            searchInput.addEventListener('input', renderComments);
+
+            commentTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    commentTabs.forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    activeCommentsTab = e.target.getAttribute('data-group');
+                    renderComments();
+                });
+            });
+
+            // Initial rendering
+            updateDashboard();
+        });
+
+        // Main update function
+        function updateDashboard() {
+            const filteredData = getFilteredDataset();
+            
+            // Update Title & Badge
+            const channel = canalFilter.value === 'All' ? '' : ` en ${canalFilter.value}`;
+            const month = mesFilter.value === 'All' ? '' : ` (${mesFilter.value})`;
+            dynamicTitle.textContent = `Dashboard CX${channel}${month}`;
+            surveyCountBadge.textContent = `Encuestas analizadas: ${filteredData.length}`;
+
+            // Update KPIs
+            updateKPIs(filteredData);
+
+            // Update Charts
+            renderTrendChart(filteredData);
+            renderNPSDoughnutChart(filteredData);
+            renderContribChart(filteredData);
+            renderDissatisfactionChart(filteredData);
+
+            // Update Comments
+            updateCommentsTabsCount();
+            renderComments();
+        }
+
+        // Get active filtered data
+        function getFilteredDataset() {
+            return dataset.filter(row => {
+                const canalMatch = canalFilter.value === 'All' || row.canal === canalFilter.value;
+                const mesMatch = mesFilter.value === 'All' || row.mes === mesFilter.value;
+                const estratMatch = estratFilter.value === 'All' || row.segmento_estr === estratFilter.value;
+                const operMatch = operFilter.value === 'All' || row.segmento_oper === operFilter.value;
+                return canalMatch && mesMatch && estratMatch && operMatch;
+            });
+        }
+
+        // Calculate and display KPIs
+        function updateKPIs(data) {
+            if (data.length === 0) {
+                kpiNpsVal.textContent = "N/A";
+                kpiNpsSub.textContent = "Sin datos en el segmento";
+                npsBarProm.style.width = '0%';
+                npsBarPas.style.width = '0%';
+                npsBarDet.style.width = '0%';
+
+                kpiCsatVal.innerHTML = "N/A";
+                csatBar.style.width = '0%';
+
+                kpiCesVal.innerHTML = "N/A";
+                cesBar.style.width = '0%';
+
+                kpiContribVal.textContent = "$0.00";
+                kpiContribSub.textContent = "Promedio: $0.00";
+                return;
+            }
+
+            const total = data.length;
+            const prom = data.filter(r => r.grupo_nps === 'Promotor').length;
+            const pas = data.filter(r => r.grupo_nps === 'Pasivo').length;
+            const det = data.filter(r => r.grupo_nps === 'Detractor').length;
+
+            // NPS
+            const nps = ((prom - det) / total) * 100;
+            kpiNpsVal.textContent = `${nps.toFixed(2)}%`;
+            kpiNpsSub.textContent = `${prom} Prom. / ${pas} Pas. / ${det} Det.`;
+            
+            // NPS bar breakdown
+            const promPct = (prom / total) * 100;
+            const pasPct = (pas / total) * 100;
+            const detPct = (det / total) * 100;
+            npsBarProm.style.width = `${promPct}%`;
+            npsBarPas.style.width = `${pasPct}%`;
+            npsBarDet.style.width = `${detPct}%`;
+            
+            // Color feedback for NPS
+            if (nps >= 30) {
+                kpiNpsVal.style.color = 'var(--color-promoter)';
+            } else if (nps >= 0) {
+                kpiNpsVal.style.color = 'var(--color-passive)';
+            } else {
+                kpiNpsVal.style.color = 'var(--color-detractor)';
+            }
+
+            // CSAT
+            let sumCsat = 0;
+            data.forEach(r => sumCsat += r.csat);
+            const csat = sumCsat / total;
+            kpiCsatVal.innerHTML = `${csat.toFixed(2)} <span style="font-size:0.9rem; color:var(--text-secondary);">/ 5</span>`;
+            csatBar.style.width = `${(csat / 5) * 100}%`;
+
+            // CES
+            let sumCes = 0;
+            data.forEach(r => sumCes += r.ces);
+            const ces = sumCes / total;
+            kpiCesVal.innerHTML = `${ces.toFixed(2)} <span style="font-size:0.9rem; color:var(--text-secondary);">/ 7</span>`;
+            cesBar.style.width = `${(ces / 7) * 100}%`;
+
+            // Contribucion
+            let sumContrib = 0;
+            data.forEach(r => sumContrib += r.contribucion_neta);
+            const avgContrib = sumContrib / total;
+            
+            // Format Millions vs K
+            let totalFormatted = "";
+            if (Math.abs(sumContrib) >= 1000000) {
+                totalFormatted = `$${(sumContrib / 1000000).toFixed(2)}M`;
+            } else {
+                totalFormatted = `$${(sumContrib / 1000).toFixed(1)}k`;
+            }
+            kpiContribVal.textContent = totalFormatted;
+            kpiContribSub.textContent = `Promedio: $${(avgContrib / 1000).toFixed(1)}k por cliente`;
+        }
+
+        // Update comment tabs counters
+        function updateCommentsTabsCount() {
+            const filteredData = getFilteredDataset();
+            const total = filteredData.length;
+            const prom = filteredData.filter(r => r.grupo_nps === 'Promotor').length;
+            const pas = filteredData.filter(r => r.grupo_nps === 'Pasivo').length;
+            const det = filteredData.filter(r => r.grupo_nps === 'Detractor').length;
+
+            commentTabs[0].textContent = `Todos (${total})`;
+            commentTabs[1].textContent = `Promotores (${prom})`;
+            commentTabs[2].textContent = `Pasivos (${pas})`;
+            commentTabs[3].textContent = `Detractores (${det})`;
+        }
+
+        // Render interactive comments
+        function renderComments() {
+            const data = getFilteredDataset();
+            const query = searchInput.value.toLowerCase();
+            
+            // Filter by selected tab
+            let tabData = data;
+            if (activeCommentsTab !== 'All') {
+                tabData = data.filter(r => r.grupo_nps === activeCommentsTab);
+            }
+
+            // Filter by search query
+            if (query) {
+                tabData = tabData.filter(r => {
+                    const promCom = (r.comentario_promotor || '').toLowerCase().includes(query);
+                    const detCom = (r.comentario_detractor || '').toLowerCase().includes(query);
+                    const pasCom = (r.comentario_pasivo || '').toLowerCase().includes(query);
+                    const idCom = r.id.toLowerCase().includes(query);
+                    return promCom || detCom || pasCom || idCom;
+                });
+            }
+
+            if (tabData.length === 0) {
+                commentsTbody.innerHTML = '<tr><td colspan="7" class="no-data-msg">No se encontraron comentarios que coincidan con los criterios.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            tabData.forEach(row => {
+                let badgeClass = 'badge-passive';
+                let comment = '';
+                if (row.grupo_nps === 'Promotor') {
+                    badgeClass = 'badge-promoter';
+                    comment = row.comentario_promotor || '<span style="color:var(--text-secondary); font-style:italic;">Sin comentario libre</span>';
+                } else if (row.grupo_nps === 'Detractor') {
+                    badgeClass = 'badge-detractor';
+                    comment = row.comentario_detractor || '<span style="color:var(--text-secondary); font-style:italic;">Sin comentario libre</span>';
+                } else {
+                    comment = row.comentario_pasivo || '<span style="color:var(--text-secondary); font-style:italic;">Sin comentario libre</span>';
+                }
+
+                const formattedContrib = row.contribucion_neta.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+
+                html += `
+                    <tr>
+                        <td class="client-id">${row.id}</td>
+                        <td>${row.canal}</td>
+                        <td><span class="badge ${badgeClass}">${row.grupo_nps}</span></td>
+                        <td><span class="score-indicator ces">${row.ces}</span></td>
+                        <td><span class="score-indicator csat">${row.csat}</span></td>
+                        <td class="contrib-val">${formattedContrib}</td>
+                        <td><div class="comment-text">${comment}</div></td>
+                    </tr>
+                `;
+            });
+
+            commentsTbody.innerHTML = html;
+        }
+
+        // --- CHART GENERATION FUNCTIONS ---
+
+        // 1. Line Chart - NPS Monthly Evolution by Channel
+        function renderTrendChart(filteredData) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            // Re-calculate the trends for WhatsApp and Call Center by month
+            // We use fixed months: Marzo, Abril, Mayo
+            const months = ['Marzo', 'Abril', 'Mayo'];
+            const channels = ['WhatsApp', 'Call Center'];
+            const trendData = {
+                'WhatsApp': [0, 0, 0],
+                'Call Center': [0, 0, 0]
+            };
+
+            channels.forEach(ch => {
+                months.forEach((m, idx) => {
+                    // Filter matching raw dataset rows
+                    const cellData = dataset.filter(r => r.canal === ch && r.mes === m);
+                    
+                    // Further filter with strategic/operative segment controls currently active
+                    const estMatch = estratFilter.value === 'All' ? cellData : cellData.filter(r => r.segmento_estr === estratFilter.value);
+                    const finalData = operFilter.value === 'All' ? estMatch : estMatch.filter(r => r.segmento_oper === operFilter.value);
+
+                    if (finalData.length > 0) {
+                        const prom = finalData.filter(r => r.grupo_nps === 'Promotor').length;
+                        const det = finalData.filter(r => r.grupo_nps === 'Detractor').length;
+                        trendData[ch][idx] = ((prom - det) / finalData.length) * 100;
+                    } else {
+                        trendData[ch][idx] = null; // No data points
+                    }
+                });
+            });
+
+            if (trendChartObj) {
+                trendChartObj.destroy();
+            }
+
+            trendChartObj = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'WhatsApp',
+                            data: trendData['WhatsApp'],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#8b5cf6',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.1,
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Call Center',
+                            data: trendData['Call Center'],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#3b82f6',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.1,
+                            spanGaps: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) { return value + '%'; }
+                            },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', weight: '600' } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Doughnut Chart - NPS Group Distribution
+        function renderNPSDoughnutChart(data) {
+            const ctx = document.getElementById('npsDoughnutChart').getContext('2d');
+            
+            const prom = data.filter(r => r.grupo_nps === 'Promotor').length;
+            const pas = data.filter(r => r.grupo_nps === 'Pasivo').length;
+            const det = data.filter(r => r.grupo_nps === 'Detractor').length;
+
+            if (npsDoughnutChartObj) {
+                npsDoughnutChartObj.destroy();
+            }
+
+            npsDoughnutChartObj = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Promotores', 'Pasivos', 'Detractores'],
+                    datasets: [{
+                        data: [prom, pas, det],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 2,
+                        borderColor: '#1e1b4b',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', weight: '600' } }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // 3. Bar Chart - Net Contribution by NPS Group
+        function renderContribChart(data) {
+            const ctx = document.getElementById('contribChart').getContext('2d');
+            
+            const groups = ['Promotor', 'Pasivo', 'Detractor'];
+            const averages = [0, 0, 0];
+
+            groups.forEach((g, idx) => {
+                const sub = data.filter(r => r.grupo_nps === g);
+                if (sub.length > 0) {
+                    let sum = 0;
+                    sub.forEach(r => sum += r.contribucion_neta);
+                    averages[idx] = sum / sub.length;
+                }
+            });
+
+            if (contribChartObj) {
+                contribChartObj.destroy();
+            }
+
+            contribChartObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Promotores', 'Pasivos', 'Detractores'],
+                    datasets: [{
+                        label: 'Contribución Neta Promedio',
+                        data: averages,
+                        backgroundColor: ['rgba(16, 185, 129, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(244, 63, 94, 0.7)'],
+                        borderColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 1.5,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) { return '$' + (value / 1000).toFixed(0) + 'k'; }
+                            },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Promedio: ${context.parsed.y.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 })}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 4. Horizontal Bar Chart - Dissatisfaction Causes (Detractors)
+        function renderDissatisfactionChart(data) {
+            const ctx = document.getElementById('dissatisfactionChart').getContext('2d');
+            
+            // Only analyze detractors within the filtered segment
+            const detractors = data.filter(r => r.grupo_nps === 'Detractor');
+            
+            // Categories and counts
+            let spamCount = 0;
+            let waitCount = 0;
+            let transparencyCount = 0;
+            let marketingIncoherence = 0;
+            let otherCount = 0;
+
+            detractors.forEach(d => {
+                const comment = (d.comentario_detractor || '').toLowerCase();
+                
+                const isSpam = comment.includes('correo') || comment.includes('spam') || comment.includes('mail') || comment.includes('bandeja') || comment.includes('promocio') || comment.includes('mensajes');
+                const isWait = comment.includes('espera') || comment.includes('tardaron') || comment.includes('minutos') || comment.includes('hora') || comment.includes('lento') || comment.includes('chatbot') || comment.includes('transferencia') || comment.includes('llamadas');
+                const isCard = comment.includes('tarjeta') || comment.includes('rechaz') || comment.includes('denega') || comment.includes('limite') || comment.includes('calific') || comment.includes('score');
+
+                if (isSpam && !isWait && !isCard) {
+                    spamCount++;
+                } else if (isWait && !isSpam && !isCard) {
+                    waitCount++;
+                } else if (isCard && !isSpam && !isWait) {
+                    transparencyCount++;
+                } else {
+                    if (isSpam && isCard) {
+                        marketingIncoherence++;
+                    } else if (isSpam) {
+                        spamCount++;
+                    } else if (isWait) {
+                        waitCount++;
+                    } else if (isCard) {
+                        transparencyCount++;
+                    } else {
+                        otherCount++;
+                    }
+                }
+            });
+
+            if (dissatisfactionChartObj) {
+                dissatisfactionChartObj.destroy();
+            }
+
+            dissatisfactionChartObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Saturación de Correos / Spam',
+                        'Tiempos de Espera / Ineficiencia',
+                        'Falta de Transparencia (Tarjetas)',
+                        'Incoherencia (Oferta vs Rechazo)',
+                        'Otras causas'
+                    ],
+                    datasets: [{
+                        label: 'Número de Casos',
+                        data: [spamCount, waitCount, transparencyCount, marketingIncoherence, otherCount],
+                        backgroundColor: 'rgba(244, 63, 94, 0.65)',
+                        borderColor: '#f43f5e',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Makes it horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', stepSize: 1 },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8', font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
